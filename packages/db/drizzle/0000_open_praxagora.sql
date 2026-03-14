@@ -4,14 +4,15 @@ CREATE TABLE `goals` (
 	`content` text NOT NULL,
 	`start_date` text NOT NULL,
 	`end_date` text NOT NULL,
-	`created_at` text DEFAULT '2026-03-14T07:35:42.471Z' NOT NULL
+	`created_at` text NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE `review_goals` (
 	`review_id` integer NOT NULL,
 	`goal_id` integer NOT NULL,
-	FOREIGN KEY (`review_id`) REFERENCES `reviews`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`goal_id`) REFERENCES `goals`(`id`) ON UPDATE no action ON DELETE no action
+	PRIMARY KEY(`review_id`, `goal_id`),
+	FOREIGN KEY (`review_id`) REFERENCES `reviews`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`goal_id`) REFERENCES `goals`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE TABLE `reviews` (
@@ -19,5 +20,5 @@ CREATE TABLE `reviews` (
 	`type` text NOT NULL,
 	`content` text NOT NULL,
 	`date` text NOT NULL,
-	`created_at` text DEFAULT '2026-03-14T07:35:42.472Z' NOT NULL
+	`created_at` text NOT NULL
 );

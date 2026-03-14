@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "93d56a7f-8864-489c-9d86-e94d7bf6eb88",
+  "id": "49c79025-59a9-42c6-aa35-58fa2ab9a3f1",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "goals": {
@@ -47,8 +47,7 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "'2026-03-14T07:35:42.471Z'"
+          "autoincrement": false
         }
       },
       "indexes": {},
@@ -87,7 +86,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "review_goals_goal_id_goals_id_fk": {
@@ -100,11 +99,19 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
+      "compositePrimaryKeys": {
+        "review_goals_review_id_goal_id_pk": {
+          "columns": [
+            "review_id",
+            "goal_id"
+          ],
+          "name": "review_goals_review_id_goal_id_pk"
+        }
+      },
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
@@ -144,8 +151,7 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "'2026-03-14T07:35:42.472Z'"
+          "autoincrement": false
         }
       },
       "indexes": {},
