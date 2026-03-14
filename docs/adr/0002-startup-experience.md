@@ -1,6 +1,6 @@
 # ADR-0002: 起動体験としてCLIラッパーを提供する
 
-- **ステータス**: 承認
+- **ステータス**: 一部取り消し → [ADR-0004](0004-architecture.md) に統合
 - **日付**: 2026-03-14
 
 ---
@@ -36,16 +36,15 @@ LoopbackはDockerで動作するが、ターゲットユーザーはエンジニ
 
 ## 決定
 
-**`supabase start` に近い体験を目指す。**
+**`loopback start` 一発で全コンポーネントが立ち上がる体験を目指す。**
 
-`loopback start` 一発で、Web UI・DB・MCPサーバーを含む全コンポーネントが立ち上がる。
-ユーザーはDockerやコンテナを一切意識しない。
+`loopback start` で Web UI・DB・MCPサーバーを含む全コンポーネントが立ち上がる。
 
-- 配布方法（brew / npm / バイナリ等）は別途決定
-- 内部実装はDocker Composeをラップする
-- DockerエンジンのインストールはDockerDesktop等に委ねる（前提条件）
+- 配布は `npm (npx loopback)` → [ADR-0004](0004-architecture.md)
+- ~~内部実装はDocker Composeをラップする~~ → **Dockerは不採用**。Node.jsプロセスをホストで直接起動する → [ADR-0004](0004-architecture.md)
 
-## 未決事項
+## Dockerを採用しなかった理由
 
-- CLIの配布方法
-- CLIの実装言語
+当初はランタイム依存の排除を目的としてDockerを前提としていた。しかし、技術スタックをTypeScript (Node.js) に決定した時点でNode.jsが前提条件となったため、Dockerによる環境分離のメリットが失われた。
+
+また、Dockerボリュームによるデータ永続化はユーザーの意図しないデータ消失リスクを持つ。Node.jsプロセスをホストで直接起動することで、DBファイルを `~/.loopback/loopback.db` にシンプルに置ける。

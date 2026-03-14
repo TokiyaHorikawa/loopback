@@ -161,7 +161,17 @@ sequenceDiagram
 | type | 中間 / 最終評価 |
 | content | 自由テキスト |
 | date | ふりかえりを行った日 |
-| goal_id | 最終評価のみ必須。中間は任意 |
+
+- 目標との紐づけは junction table（ReviewGoal）で管理する
+- 中間ふりかえり：0〜n個の目標と紐づけ可能（任意）
+- 最終ふりかえり：1つの目標と紐づけ必須
+
+#### ReviewGoal（junction table）
+
+| 属性 | 内容 |
+|---|---|
+| review_id | ふりかえりID |
+| goal_id | 目標ID |
 
 ### ER図
 
@@ -177,9 +187,13 @@ erDiagram
         string type "中間 / 最終評価"
         string content
         date date
-        string goal_id "最終評価のみ必須"
     }
-    Goal ||--o{ Review : "紐づく"
+    ReviewGoal {
+        string review_id
+        string goal_id
+    }
+    Goal ||--o{ ReviewGoal : ""
+    Review ||--o{ ReviewGoal : ""
 ```
 
 ### 設計方針

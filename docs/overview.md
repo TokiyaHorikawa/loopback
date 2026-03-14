@@ -72,10 +72,10 @@ graph TB
     subgraph Claude["Claude"]
         CC[Claude Code / Desktop App]
     end
-    subgraph Loopback["Loopback（ローカル）"]
+    subgraph Loopback["Loopback（ローカル Node.js プロセス）"]
         MCP[MCP Server\nSSE]
         API[REST API]
-        DB[(SQLite)]
+        DB[(SQLite\n~/.loopback/loopback.db)]
         WUI[Web UI]
     end
 
@@ -91,11 +91,16 @@ graph TB
 
 ## 未決事項
 
-- MCPツールの設計（Claudeに何ができるか）
 - MVP スコープ
+- Web UIの画面構成
+- CLIのコマンド体系（`loopback start` 以外）
 
 ## 決定済み事項
 
 - **ふりかえりの種別** — 中間ふりかえり（調整・確認）と最終ふりかえり（評価・締め）の2種類。中間は複数目標をまたいでもよく目標との紐づけは任意。最終は特定の目標に必須。→ [ADR-0003](adr/0003-review-classification.md)
 - **ふりかえりの粒度** — 時間軸（日次/週次）ではなく役割（中間/最終）で分類。頻度はユーザーに委ねる。「いつやらなければ」という強制をシステムが生まない設計。→ [ADR-0003](adr/0003-review-classification.md)
 - **目標の構造** — 年間目標と四半期目標は独立エンティティ。親子関係の強制はしない。会社ツールからコピペするだけでよい。→ [ADR-0003](adr/0003-review-classification.md)
+- **技術スタック** — TypeScript (Hono + Node.js) + React + Vite + SQLite。CLI は npm (npx) で配布。→ [ADR-0004](adr/0004-architecture.md)
+- **コンテナ構成** — 単一コンテナ。API・MCP SSE・Web UIを同一プロセスで提供。→ [ADR-0004](adr/0004-architecture.md)
+- **MCPツール設計** — `get_context` / `list_reviews` / `find_reviews` / `create_goal` / `save_review` の5ツール。→ [ADR-0004](adr/0004-architecture.md)
+- **MCPプロンプト設計** — `review` / `review_final` / `set_goal` の3プロンプトでふりかえりの型を提供。→ [ADR-0005](adr/0005-mcp-prompts.md)
