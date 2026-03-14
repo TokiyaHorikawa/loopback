@@ -20,8 +20,5 @@
     "onlyBuiltDependencies": [
       "esbuild"
     ]
-  },
-  "volta": {
-    "node": "24.14.0"
   }
 }
