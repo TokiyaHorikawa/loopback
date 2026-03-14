@@ -1,2 +1,3 @@
-// @loopback/db — entry point (placeholder, Drizzle 追加予定)
-export {}
+export * from './schema.js'
+export { getDb } from './client.js'
+export { DB_DIR, DB_PATH } from './constants.js'
