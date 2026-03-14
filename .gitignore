@@ -2,3 +2,17 @@ node_modules/
 dist/
 *.tsbuildinfo
 .DS_Store
+
+# tsc build artifacts leaked outside dist/
+vite.config.js
+vite.config.d.ts
+vite.config.d.ts.map
+vite.config.js.map
+packages/web/vite.config.js
+packages/web/vite.config.d.ts
+packages/web/vite.config.d.ts.map
+packages/web/vite.config.js.map
+packages/db/drizzle.config.js
+packages/db/drizzle.config.d.ts
+packages/db/drizzle.config.d.ts.map
+packages/db/drizzle.config.js.map

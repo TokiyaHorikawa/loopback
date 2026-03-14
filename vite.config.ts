@@ -1,8 +1,8 @@
-import { defineConfig } from 'vite-plus'
+import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   lint: {
-    ignorePatterns: ['**/dist/**', '**/node_modules/**'],
+    ignorePatterns: ["**/dist/**", "**/node_modules/**"],
   },
   fmt: {
     semi: false,
@@ -11,6 +11,6 @@ export default defineConfig({
     sortImports: {},
   },
   test: {
-    include: ['packages/*/src/**/*.test.ts'],
+    include: ["packages/*/src/**/*.test.ts"],
   },
-})
+});

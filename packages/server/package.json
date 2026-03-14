@@ -10,11 +10,16 @@
     "dev": "tsx src/index.ts"
   },
   "dependencies": {
+    "@hono/node-server": "^1.14.0",
     "@loopback/db": "workspace:*",
-    "hono": "^4.7.0",
-    "@hono/node-server": "^1.14.0"
+    "drizzle-orm": "^0.38.4",
+    "hono": "^4.7.0"
   },
   "devDependencies": {
-    "tsx": "^4.19.0"
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^22.19.15",
+    "better-sqlite3": "^11.10.0",
+    "tsx": "^4.19.0",
+    "vitest": "^4.1.0"
   }
 }
