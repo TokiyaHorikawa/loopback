@@ -4,7 +4,7 @@ CREATE TABLE `goals` (
 	`content` text NOT NULL,
 	`start_date` text NOT NULL,
 	`end_date` text NOT NULL,
-	`created_at` text NOT NULL
+	`created_at` text DEFAULT (datetime('now')) NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE `review_goals` (
@@ -20,5 +20,5 @@ CREATE TABLE `reviews` (
 	`type` text NOT NULL,
 	`content` text NOT NULL,
 	`date` text NOT NULL,
-	`created_at` text NOT NULL
+	`created_at` text DEFAULT (datetime('now')) NOT NULL
 );

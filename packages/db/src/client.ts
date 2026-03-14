@@ -1,14 +1,17 @@
 import { mkdirSync } from 'node:fs'
-import { homedir } from 'node:os'
-import { join } from 'node:path'
 import Database from 'better-sqlite3'
 import { drizzle } from 'drizzle-orm/better-sqlite3'
+import { DB_DIR, DB_PATH } from './constants.js'
 import * as schema from './schema.js'
 
-const dbDir = join(homedir(), '.loopback')
-mkdirSync(dbDir, { recursive: true })
+let _db: ReturnType<typeof drizzle<typeof schema>> | undefined
 
-const sqlite = new Database(join(dbDir, 'loopback.db'))
-sqlite.pragma('foreign_keys = ON')
-
-export const db = drizzle(sqlite, { schema })
+export function getDb() {
+  if (!_db) {
+    mkdirSync(DB_DIR, { recursive: true })
+    const sqlite = new Database(DB_PATH)
+    sqlite.pragma('foreign_keys = ON')
+    _db = drizzle(sqlite, { schema })
+  }
+  return _db
+}
