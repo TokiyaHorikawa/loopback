@@ -1,0 +1,14 @@
+pre-commit:
+  parallel: true
+  jobs:
+    - name: lint
+      glob: '*.{js,ts,jsx,tsx}'
+      run: pnpm exec vp lint {staged_files}
+
+    - name: format
+      glob: '*.{js,ts,jsx,tsx,json,css,html,md,yml,yaml}'
+      run: pnpm exec vp fmt --check {staged_files}
+
+    - name: typecheck
+      glob: '*.{ts,tsx}'
+      run: pnpm tsc --build --noEmit
