@@ -9,5 +9,6 @@ const dbDir = join(homedir(), '.loopback')
 mkdirSync(dbDir, { recursive: true })
 
 const sqlite = new Database(join(dbDir, 'loopback.db'))
+sqlite.pragma('foreign_keys = ON')
 
 export const db = drizzle(sqlite, { schema })

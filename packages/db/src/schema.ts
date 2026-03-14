@@ -1,4 +1,4 @@
-import { int, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { int, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
 export const goals = sqliteTable('goals', {
   id: int('id').primaryKey({ autoIncrement: true }),
@@ -17,11 +17,15 @@ export const reviews = sqliteTable('reviews', {
   created_at: text('created_at').notNull().$defaultFn(() => new Date().toISOString()),
 })
 
-export const review_goals = sqliteTable('review_goals', {
-  review_id: int('review_id')
-    .notNull()
-    .references(() => reviews.id),
-  goal_id: int('goal_id')
-    .notNull()
-    .references(() => goals.id),
-})
+export const review_goals = sqliteTable(
+  'review_goals',
+  {
+    review_id: int('review_id')
+      .notNull()
+      .references(() => reviews.id, { onDelete: 'cascade' }),
+    goal_id: int('goal_id')
+      .notNull()
+      .references(() => goals.id, { onDelete: 'cascade' }),
+  },
+  (table) => [primaryKey({ columns: [table.review_id, table.goal_id] })],
+)
