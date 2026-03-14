@@ -67,6 +67,17 @@ describe("POST /api/goals", () => {
     expect(res.status).toBe(400);
   });
 
+  it("returns 400 for invalid JSON body", async () => {
+    const res = await app.request("/api/goals", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "not json",
+    });
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe("Invalid JSON");
+  });
+
   it("returns 400 for invalid type", async () => {
     const res = await app.request("/api/goals", {
       method: "POST",
@@ -89,7 +100,7 @@ describe("GET /api/goals", () => {
     expect(await res.json()).toEqual([]);
   });
 
-  it("returns goals ordered by created_at desc", async () => {
+  it("returns goals ordered by id desc", async () => {
     // Insert two goals
     await app.request("/api/goals", {
       method: "POST",
