@@ -1,0 +1,24 @@
+{
+  "name": "loopback-workspace",
+  "private": true,
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "vp run dev",
+    "build": "vp run build",
+    "check": "vp run check",
+    "test": "vp test",
+    "lint": "vp lint",
+    "fmt": "vp fmt"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vite-plus": "^0.1.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}
