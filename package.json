@@ -9,7 +9,8 @@
     "check": "vp run check",
     "test": "vp test",
     "lint": "vp lint",
-    "fmt": "vp fmt"
+    "fmt": "vp fmt",
+    "typecheck": "tsc --build"
   },
   "devDependencies": {
     "typescript": "^5.7.0",
@@ -23,5 +24,6 @@
       "better-sqlite3",
       "esbuild"
     ]
-  }
+  },
+  "packageManager": "pnpm@10.32.1"
 }
