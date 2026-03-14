@@ -7,6 +7,8 @@ export default defineConfig({
   fmt: {
     semi: false,
     singleQuote: true,
+    insertFinalNewline: true,
+    sortImports: {},
   },
   test: {
     include: ['packages/*/src/**/*.test.ts'],
