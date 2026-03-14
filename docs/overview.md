@@ -64,16 +64,27 @@ UIは「ふりかえりをきれいに見る場所」であり、書く場所で
 
 ## アーキテクチャ概要
 
-```
-[Claude Code / Claude Desktop App]
-    |
-    | MCP (SSE)  ← ふりかえりの入力・読み取り・対話
-    |
-[API layer]  ← REST API + MCP (SSE) エンドポイント
-    |
-[SQLite]  ← ローカルファイルとしてデータ永続化
-    |
-[Web UI]  ← ログの閲覧・可視化（読み専）
+```mermaid
+graph TB
+    subgraph User["ユーザー"]
+        U[人]
+    end
+    subgraph Claude["Claude"]
+        CC[Claude Code / Desktop App]
+    end
+    subgraph Loopback["Loopback（ローカル）"]
+        MCP[MCP Server\nSSE]
+        API[REST API]
+        DB[(SQLite)]
+        WUI[Web UI]
+    end
+
+    U <-->|対話| CC
+    CC <-->|MCP SSE| MCP
+    MCP --- API
+    API --- DB
+    U -->|閲覧のみ| WUI
+    WUI --- API
 ```
 
 ---
@@ -85,6 +96,6 @@ UIは「ふりかえりをきれいに見る場所」であり、書く場所で
 
 ## 決定済み事項
 
-- **ふりかえりの種別** — 中間ふりかえり（調整・確認）と最終評価ふりかえり（評価・締め）の2種類。詳細は `docs/ux-flow.md` 参照
-- **ふりかえりの粒度** — 時間軸（日次/週次）ではなく役割（中間/最終評価）で分類。頻度はユーザーに委ねる
-- **データモデルの方向性** — 目標（年間/四半期）とふりかえりの関係は種別次第。詳細は `docs/data-model.md` 参照
+- **ふりかえりの種別** — 中間ふりかえり（調整・確認）と最終ふりかえり（評価・締め）の2種類。中間は複数目標をまたいでもよく目標との紐づけは任意。最終は特定の目標に必須。→ [ADR-0003](adr/0003-review-classification.md) / [UXフロー](ux-flow.md)
+- **ふりかえりの粒度** — 時間軸（日次/週次）ではなく役割（中間/最終）で分類。頻度はユーザーに委ねる。「いつやらなければ」という強制をシステムが生まない設計。→ [ADR-0003](adr/0003-review-classification.md)
+- **目標の構造** — 年間目標と四半期目標は独立エンティティ。親子関係の強制はしない。会社ツールからコピペするだけでよい。→ [ADR-0004](adr/0004-goal-no-hierarchy.md) / [データモデル](data-model.md)

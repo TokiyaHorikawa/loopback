@@ -69,30 +69,3 @@ sequenceDiagram
     Claude->>Loopback: 最終ふりかえりを保存
     Note over User,DB: このログが次の目標設定のインプットになる
 ```
-
----
-
-## システム構成
-
-```mermaid
-graph TB
-    subgraph User["ユーザー"]
-        U[人]
-    end
-    subgraph Claude["Claude"]
-        CC[Claude Code / Desktop App]
-    end
-    subgraph Loopback["Loopback（ローカル）"]
-        MCP[MCP Server\nSSE]
-        API[REST API]
-        DB[(SQLite)]
-        WUI[Web UI]
-    end
-
-    U <-->|対話| CC
-    CC <-->|MCP SSE| MCP
-    MCP --- API
-    API --- DB
-    U -->|閲覧のみ| WUI
-    WUI --- API
-```
