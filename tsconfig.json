@@ -11,6 +11,11 @@
     "declarationMap": true,
     "sourceMap": true
   },
+  // ルート tsconfig は solution-style（参照の集約のみ）として扱い、自身ではファイルをコンパイルしない。
+  // files: [] がないと vite.config.ts が暗黙的にコンパイルされ、生成される vite.config.js を
+  // oxlint v1.55.0 が設定ファイルとして誤認するバグを踏む。
+  // ref: oxlint の js_config.js が vite.config.ts のみ特別扱いし .js を処理しない問題
+  "files": [],
   "exclude": ["node_modules", "dist"],
   "references": [
     { "path": "./packages/db" },

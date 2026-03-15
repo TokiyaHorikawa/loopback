@@ -11,4 +11,7 @@ pre-commit:
 
     - name: typecheck
       glob: '*.{ts,tsx}'
-      run: pnpm tsc --build --noEmit
+      # --noEmit ではなく --build を使う理由:
+      # monorepo の project references を辿るには --build が必要で、
+      # --build は emit 前提のため --noEmit と併用すると TS6310 エラーになる。
+      run: pnpm typecheck
