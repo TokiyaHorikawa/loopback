@@ -1,5 +1,6 @@
 name: CI
 
+# main ブランチへの push と PR をトリガーに CI を実行
 on:
   push:
     branches: [main]
@@ -13,16 +14,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # packageManager フィールドから pnpm バージョンを自動検出してインストール
       - uses: pnpm/action-setup@v4
 
+      # .node-version ファイルから Node.js バージョンを自動検出してインストール
       - uses: actions/setup-node@v4
         with:
           node-version-file: .node-version
 
+      # --- 依存キャッシュ ---
+      # pnpm store（ダウンロード済みパッケージの保存先）のパスを取得し、後続のキャッシュ対象に含める
       - name: Get pnpm store path
         id: pnpm-store
         run: echo "path=$(pnpm store path)" >> "$GITHUB_OUTPUT"
 
+      # pnpm store + node_modules をキャッシュする
+      # key は pnpm-lock.yaml のハッシュなので、lockfile が変わらない限り同じキャッシュがヒットする
+      # - pnpm store: パッケージの実体（ダウンロード結果）
+      # - node_modules / packages/*/node_modules: store からのリンク（pnpm install の成果物）
+      # 両方キャッシュすることで、キャッシュヒット時は pnpm install 自体をスキップできる
       - uses: actions/cache@v4
         id: cache-deps
         with:
@@ -32,9 +42,12 @@ jobs:
             ${{ steps.pnpm-store.outputs.path }}
           key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
+      # キャッシュがヒットしなかった場合のみ install を実行
+      # --frozen-lockfile: lockfile と package.json の不整合があればエラーにする（CI 向け安全オプション）
       - if: steps.cache-deps.outputs.cache-hit != 'true'
         run: pnpm install --frozen-lockfile
 
+      # --- チェック ---
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
