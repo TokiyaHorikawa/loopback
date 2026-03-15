@@ -1,12 +1,13 @@
-import { Hono } from "hono";
-import goalsRoute from "./routes/goals.js";
-import reviewsRoute from "./routes/reviews.js";
+import { Hono } from 'hono'
 
-export const app = new Hono();
+import goalsRoute from './routes/goals.js'
+import reviewsRoute from './routes/reviews.js'
 
-app.get("/api/health", (c) => {
-  return c.json({ status: "ok" });
-});
+export const app = new Hono()
 
-app.route("/api/goals", goalsRoute);
-app.route("/api/reviews", reviewsRoute);
+app.get('/api/health', (c) => {
+  return c.json({ status: 'ok' })
+})
+
+app.route('/api/goals', goalsRoute)
+app.route('/api/reviews', reviewsRoute)
