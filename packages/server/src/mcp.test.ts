@@ -122,7 +122,7 @@ describe('get_context tool', () => {
     await mcpInitialize()
 
     // seed data
-    app.request('/api/goals', {
+    await app.request('/api/goals', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
