@@ -10,8 +10,10 @@
     "dev": "tsx src/index.ts"
   },
   "dependencies": {
+    "@hono/mcp": "^0.2.4",
     "@hono/node-server": "^1.14.0",
     "@loopback/db": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "drizzle-orm": "^0.38.4",
     "hono": "^4.7.0"
   },
