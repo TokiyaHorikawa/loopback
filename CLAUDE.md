@@ -15,6 +15,17 @@
 - 単体で動かすときは `pnpm --filter @loopback/<pkg> <script>`
 - DB スキーマ変更: `pnpm --filter @loopback/db generate` → `migrate`
 
+## サーバーアーキテクチャ（ADR-0006）
+
+packages/server/src/ は4レイヤー構成:
+
+- `routes/` — HTTP の受け取り・レスポンス返却。validator → service → JSON返却
+- `validators/` — リクエストボディの検証・パース。DB アクセス禁止
+- `services/` — ビジネスロジック。複数 repository の組み合わせ。単純CRUDはそのまま委譲
+- `repositories/` — DB クエリの構築・実行。drizzle 操作はここに閉じる
+
+依存方向: routes → validators, routes → services → repositories（逆方向禁止）
+
 ## テスト・品質
 
 - `pnpm test`（Vitest）/ `pnpm lint` / `pnpm fmt` / `pnpm typecheck`

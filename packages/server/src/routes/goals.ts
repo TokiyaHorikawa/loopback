@@ -1,13 +1,12 @@
-import { getDb, goals } from '@loopback/db'
-import { desc } from 'drizzle-orm'
 import { Hono } from 'hono'
+
+import { listGoals, createGoal } from '../services/goals.js'
+import { validateGoalInput } from '../validators/goals.js'
 
 const app = new Hono()
 
 app.get('/', (c) => {
-  const db = getDb()
-  const rows = db.select().from(goals).orderBy(desc(goals.id)).all()
-  return c.json(rows)
+  return c.json(listGoals())
 })
 
 app.post('/', async (c) => {
@@ -17,28 +16,13 @@ app.post('/', async (c) => {
   } catch {
     return c.json({ error: 'Invalid JSON' }, 400)
   }
-  const { type, content, start_date, end_date } = body
 
-  if (!type || !content || !start_date || !end_date) {
-    return c.json({ error: 'type, content, start_date, end_date are required' }, 400)
+  const validated = validateGoalInput(body)
+  if ('error' in validated) {
+    return c.json({ error: validated.error }, 400)
   }
 
-  if (type !== 'annual' && type !== 'quarterly') {
-    return c.json({ error: "type must be 'annual' or 'quarterly'" }, 400)
-  }
-
-  const db = getDb()
-  const result = db
-    .insert(goals)
-    .values({
-      type: type as 'annual' | 'quarterly',
-      content: content as string,
-      start_date: start_date as string,
-      end_date: end_date as string,
-    })
-    .returning()
-    .get()
-  return c.json(result, 201)
+  return c.json(createGoal(validated.data), 201)
 })
 
 export default app
