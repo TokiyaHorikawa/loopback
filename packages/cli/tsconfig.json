@@ -5,5 +5,5 @@
     "rootDir": "./src"
   },
   "include": ["src"],
-  "references": [{ "path": "../server" }]
+  "references": [{ "path": "../db" }, { "path": "../server" }]
 }
