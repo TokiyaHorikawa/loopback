@@ -1,10 +1,15 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { StreamableHTTPTransport } from '@hono/mcp'
 import { serveStatic } from '@hono/node-server/serve-static'
 import { Hono } from 'hono'
 
-import { mcpServer, mcpTransport } from './mcp.js'
+import { mcpServer } from './mcp.js'
+
+const mcpTransport = new StreamableHTTPTransport({
+  enableJsonResponse: true,
+})
 import contextRoute from './routes/context.js'
 import goalsRoute from './routes/goals.js'
 import reviewsRoute from './routes/reviews.js'

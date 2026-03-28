@@ -2,6 +2,8 @@ import { serve } from '@hono/node-server'
 
 import { app } from './app.js'
 
+export { runStdio } from './stdio.js'
+
 export interface StartServerOptions {
   port?: number
   silent?: boolean
