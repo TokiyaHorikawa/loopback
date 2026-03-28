@@ -15,7 +15,8 @@
     "@loopback/db": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.27.1",
     "drizzle-orm": "^0.38.4",
-    "hono": "^4.7.0"
+    "hono": "^4.7.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",

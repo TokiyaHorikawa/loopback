@@ -97,6 +97,61 @@ describe('MCP Streamable HTTP', () => {
   })
 })
 
+describe('create_goal tool', () => {
+  it('creates a goal and returns it', async () => {
+    await mcpInitialize()
+
+    const res = await mcpRequest({
+      jsonrpc: '2.0',
+      id: 10,
+      method: 'tools/call',
+      params: {
+        name: 'create_goal',
+        arguments: {
+          type: 'quarterly',
+          content: 'Q1の目標',
+          start_date: '2026-01-01',
+          end_date: '2026-03-31',
+        },
+      },
+    })
+
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    const goal = JSON.parse(body.result.content[0].text)
+    expect(goal).toMatchObject({
+      id: 1,
+      type: 'quarterly',
+      content: 'Q1の目標',
+      start_date: '2026-01-01',
+      end_date: '2026-03-31',
+    })
+  })
+
+  it('returns error for invalid type', async () => {
+    await mcpInitialize()
+
+    const res = await mcpRequest({
+      jsonrpc: '2.0',
+      id: 11,
+      method: 'tools/call',
+      params: {
+        name: 'create_goal',
+        arguments: {
+          type: 'monthly',
+          content: '不正な目標',
+          start_date: '2026-01-01',
+          end_date: '2026-03-31',
+        },
+      },
+    })
+
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.result.isError).toBe(true)
+  })
+})
+
 describe('get_context tool', () => {
   it('returns empty context when no data exists', async () => {
     await mcpInitialize()
