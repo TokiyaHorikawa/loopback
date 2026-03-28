@@ -1,3 +1,4 @@
+import { serveStatic } from '@hono/node-server/serve-static'
 import { Hono } from 'hono'
 
 import { mcpServer, mcpTransport } from './mcp.js'
@@ -19,3 +20,7 @@ app.all('/mcp', async (c) => {
   if (!mcpServer.isConnected()) await mcpServer.connect(mcpTransport)
   return mcpTransport.handleRequest(c)
 })
+
+// Static file serving for Web UI
+app.use('/*', serveStatic({ root: '../web/dist' }))
+app.get('/*', serveStatic({ root: '../web/dist', path: 'index.html' }))
