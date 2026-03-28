@@ -4,7 +4,9 @@ import { z } from 'zod'
 
 import { getContext } from './services/context.js'
 import { createGoal } from './services/goals.js'
+import { createReview } from './services/reviews.js'
 import { validateGoalInput } from './validators/goals.js'
+import { validateReviewInput } from './validators/reviews.js'
 
 export const mcpServer = new McpServer({
   name: 'loopback',
@@ -46,6 +48,32 @@ mcpServer.registerTool(
     const goal = createGoal(validated.data)
     return {
       content: [{ type: 'text', text: JSON.stringify(goal) }],
+    }
+  },
+)
+
+mcpServer.registerTool(
+  'save_review',
+  {
+    description: 'type, content, date, goal_ids? でふりかえりを保存する',
+    inputSchema: {
+      type: z.enum(['interim', 'final']),
+      content: z.string(),
+      date: z.string(),
+      goal_ids: z.array(z.number()).optional(),
+    },
+  },
+  ({ type, content, date, goal_ids }) => {
+    const validated = validateReviewInput({ type, content, date, goal_ids })
+    if ('error' in validated) {
+      return {
+        content: [{ type: 'text', text: JSON.stringify({ error: validated.error }) }],
+        isError: true,
+      }
+    }
+    const review = createReview(validated.data)
+    return {
+      content: [{ type: 'text', text: JSON.stringify(review) }],
     }
   },
 )

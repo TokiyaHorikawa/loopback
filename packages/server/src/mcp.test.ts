@@ -152,6 +152,101 @@ describe('create_goal tool', () => {
   })
 })
 
+describe('save_review tool', () => {
+  it('creates an interim review without goal_ids', async () => {
+    await mcpInitialize()
+
+    const res = await mcpRequest({
+      jsonrpc: '2.0',
+      id: 20,
+      method: 'tools/call',
+      params: {
+        name: 'save_review',
+        arguments: {
+          type: 'interim',
+          content: '今週は順調に進んだ',
+          date: '2026-03-28',
+        },
+      },
+    })
+
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    const review = JSON.parse(body.result.content[0].text)
+    expect(review).toMatchObject({
+      id: 1,
+      type: 'interim',
+      content: '今週は順調に進んだ',
+      date: '2026-03-28',
+      goal_ids: [],
+    })
+  })
+
+  it('creates a final review with goal_ids', async () => {
+    await mcpInitialize()
+
+    // seed a goal
+    await app.request('/api/goals', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'quarterly',
+        content: 'Q1目標',
+        start_date: '2026-01-01',
+        end_date: '2026-03-31',
+      }),
+    })
+
+    const res = await mcpRequest({
+      jsonrpc: '2.0',
+      id: 21,
+      method: 'tools/call',
+      params: {
+        name: 'save_review',
+        arguments: {
+          type: 'final',
+          content: '目標を達成した',
+          date: '2026-03-31',
+          goal_ids: [1],
+        },
+      },
+    })
+
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    const review = JSON.parse(body.result.content[0].text)
+    expect(review).toMatchObject({
+      id: 1,
+      type: 'final',
+      content: '目標を達成した',
+      date: '2026-03-31',
+      goal_ids: [1],
+    })
+  })
+
+  it('returns error when final review has no goal_ids', async () => {
+    await mcpInitialize()
+
+    const res = await mcpRequest({
+      jsonrpc: '2.0',
+      id: 22,
+      method: 'tools/call',
+      params: {
+        name: 'save_review',
+        arguments: {
+          type: 'final',
+          content: '目標を達成した',
+          date: '2026-03-31',
+        },
+      },
+    })
+
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.result.isError).toBe(true)
+  })
+})
+
 describe('get_context tool', () => {
   it('returns empty context when no data exists', async () => {
     await mcpInitialize()
