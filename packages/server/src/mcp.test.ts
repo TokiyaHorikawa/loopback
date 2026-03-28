@@ -589,6 +589,80 @@ describe('save_review tool', () => {
   })
 })
 
+describe('MCP prompts', () => {
+  it('lists all prompts', async () => {
+    await mcpInitialize()
+
+    const res = await mcpRequest({
+      jsonrpc: '2.0',
+      id: 50,
+      method: 'prompts/list',
+      params: {},
+    })
+
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    const names = body.result.prompts.map((p: any) => p.name)
+    expect(names).toContain('review')
+    expect(names).toContain('review_final')
+    expect(names).toContain('set_goal')
+  })
+
+  it('returns review prompt', async () => {
+    await mcpInitialize()
+
+    const res = await mcpRequest({
+      jsonrpc: '2.0',
+      id: 51,
+      method: 'prompts/get',
+      params: { name: 'review' },
+    })
+
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.result.messages).toHaveLength(1)
+    expect(body.result.messages[0].role).toBe('user')
+    expect(body.result.messages[0].content.text).toContain('get_context')
+    expect(body.result.messages[0].content.text).toContain('save_review')
+  })
+
+  it('returns review_final prompt', async () => {
+    await mcpInitialize()
+
+    const res = await mcpRequest({
+      jsonrpc: '2.0',
+      id: 52,
+      method: 'prompts/get',
+      params: { name: 'review_final' },
+    })
+
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.result.messages).toHaveLength(1)
+    expect(body.result.messages[0].role).toBe('user')
+    expect(body.result.messages[0].content.text).toContain('list_reviews')
+    expect(body.result.messages[0].content.text).toContain('save_review')
+  })
+
+  it('returns set_goal prompt', async () => {
+    await mcpInitialize()
+
+    const res = await mcpRequest({
+      jsonrpc: '2.0',
+      id: 53,
+      method: 'prompts/get',
+      params: { name: 'set_goal' },
+    })
+
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.result.messages).toHaveLength(1)
+    expect(body.result.messages[0].role).toBe('user')
+    expect(body.result.messages[0].content.text).toContain('find_reviews')
+    expect(body.result.messages[0].content.text).toContain('create_goal')
+  })
+})
+
 describe('get_context tool', () => {
   it('returns empty context when no data exists', async () => {
     await mcpInitialize()
