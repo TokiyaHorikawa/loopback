@@ -1,4 +1,3 @@
-import { StreamableHTTPTransport } from '@hono/mcp'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
 
@@ -253,7 +252,3 @@ mcpServer.registerPrompt(
     ],
   }),
 )
-
-export const mcpTransport = new StreamableHTTPTransport({
-  enableJsonResponse: true,
-})

@@ -3,7 +3,7 @@
 import { parseArgs } from 'node:util'
 
 import { DB_PATH, migrate } from '@loopback/db'
-import { startServer } from '@loopback/server'
+import { runStdio, startServer } from '@loopback/server'
 
 const VERSION = '0.0.1'
 
@@ -14,10 +14,19 @@ Usage: loopback <command> [options]
 
 Commands:
   start   サーバーを起動する
+  mcp     stdioモードでMCPサーバーを起動する
 
 Options:
   --help     ヘルプを表示
   --version  バージョンを表示`
+
+const MCP_HELP = `Usage: loopback mcp
+
+stdioモードでMCPサーバーを起動する。
+Claude Code / Claude Desktop が自動でプロセスを管理するため、手動起動は不要。
+
+登録例:
+  claude mcp add loopback -- npx loopback mcp`
 
 const START_HELP = `Usage: loopback start [options]
 
@@ -40,6 +49,8 @@ function main() {
   if (!command || args.includes('--help') || args.includes('-h')) {
     if (command === 'start') {
       console.log(START_HELP)
+    } else if (command === 'mcp') {
+      console.log(MCP_HELP)
     } else {
       console.log(HELP)
     }
@@ -48,6 +59,8 @@ function main() {
 
   if (command === 'start') {
     start()
+  } else if (command === 'mcp') {
+    mcp()
   } else {
     console.error(`Unknown command: ${command}`)
     console.log(HELP)
@@ -82,6 +95,11 @@ function start() {
   startServer({ port, silent: true })
   console.log(`  Server:    http://localhost:${port}`)
   console.log(`  MCP:       http://localhost:${port}/mcp\n`)
+}
+
+function mcp() {
+  migrate()
+  runStdio()
 }
 
 main()
