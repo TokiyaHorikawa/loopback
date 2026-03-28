@@ -7,6 +7,29 @@ export interface ReviewInput {
   goal_ids: number[]
 }
 
+export interface ListReviewsInput {
+  limit: number
+  goal_id?: number
+}
+
+export function validateListReviewsInput(
+  body: Record<string, unknown>,
+): { data: ListReviewsInput } | { error: string } {
+  const { limit, goal_id } = body
+
+  if (typeof limit !== 'number' || limit < 1) {
+    return { error: 'limit must be a positive number' }
+  }
+
+  if (goal_id !== undefined && (typeof goal_id !== 'number' || goal_id < 1)) {
+    return { error: 'goal_id must be a positive number' }
+  }
+
+  return {
+    data: { limit, goal_id: goal_id as number | undefined },
+  }
+}
+
 export function validateReviewInput(
   body: Record<string, unknown>,
 ): { data: ReviewInput } | { error: string } {

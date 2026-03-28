@@ -23,6 +23,14 @@ export function getRecentReviews(limit: number) {
   }))
 }
 
+export function getReviewsByGoalId(goalId: number, limit: number) {
+  const rows = repo.findReviewsByGoalId(goalId, limit)
+  return rows.map((row) => ({
+    ...row,
+    goal_ids: repo.findGoalIdsByReviewId(row.id),
+  }))
+}
+
 export function getReviewStats() {
   return repo.getReviewStats()
 }

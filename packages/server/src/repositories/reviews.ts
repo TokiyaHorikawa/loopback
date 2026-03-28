@@ -42,6 +42,24 @@ export function insertReviewGoal(reviewId: number, goalId: number) {
   db.insert(review_goals).values({ review_id: reviewId, goal_id: goalId }).run()
 }
 
+export function findReviewsByGoalId(goalId: number, limit: number) {
+  const db = getDb()
+  return db
+    .select({
+      id: reviews.id,
+      type: reviews.type,
+      content: reviews.content,
+      date: reviews.date,
+      created_at: reviews.created_at,
+    })
+    .from(reviews)
+    .innerJoin(review_goals, eq(reviews.id, review_goals.review_id))
+    .where(eq(review_goals.goal_id, goalId))
+    .orderBy(desc(reviews.id))
+    .limit(limit)
+    .all()
+}
+
 export function getReviewStats() {
   const db = getDb()
   return db
