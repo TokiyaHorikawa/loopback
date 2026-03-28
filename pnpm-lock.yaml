@@ -20,9 +20,16 @@ importers:
 
   packages/cli:
     dependencies:
+      '@loopback/db':
+        specifier: workspace:*
+        version: link:../db
       '@loopback/server':
         specifier: workspace:*
         version: link:../server
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.15
 
   packages/db:
     dependencies:
