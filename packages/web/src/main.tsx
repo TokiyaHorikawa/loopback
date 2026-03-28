@@ -1,9 +1,12 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
-// @loopback/web — React entry point (placeholder)
+import { App } from './App'
+
+import './index.css'
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <div>Loopback</div>
+    <App />
   </StrictMode>,
 )
