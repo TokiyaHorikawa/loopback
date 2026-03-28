@@ -1,3 +1,6 @@
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
 import { serveStatic } from '@hono/node-server/serve-static'
 import { Hono } from 'hono'
 
@@ -22,5 +25,7 @@ app.all('/mcp', async (c) => {
 })
 
 // Static file serving for Web UI
-app.use('/*', serveStatic({ root: '../web/dist' }))
-app.get('/*', serveStatic({ root: '../web/dist', path: 'index.html' }))
+const webDistDir = path.resolve(fileURLToPath(import.meta.url), '../../..', 'web/dist')
+const webDistRoot = path.relative(process.cwd(), webDistDir)
+app.use('/*', serveStatic({ root: webDistRoot }))
+app.get('/*', serveStatic({ root: webDistRoot, path: 'index.html' }))
