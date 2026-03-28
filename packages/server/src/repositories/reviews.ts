@@ -1,5 +1,5 @@
 import { getDb, reviews, review_goals } from '@loopback/db'
-import { count, desc, eq, max } from 'drizzle-orm'
+import { and, count, desc, eq, gte, like, lte, max } from 'drizzle-orm'
 
 import type { ReviewInput } from '../validators/reviews.js'
 
@@ -57,6 +57,31 @@ export function findReviewsByGoalId(goalId: number, limit: number) {
     .where(eq(review_goals.goal_id, goalId))
     .orderBy(desc(reviews.id))
     .limit(limit)
+    .all()
+}
+
+export interface FindReviewsFilters {
+  limit: number
+  query?: string
+  from?: string
+  to?: string
+  type?: 'interim' | 'final'
+}
+
+export function findReviewsByFilters(filters: FindReviewsFilters) {
+  const db = getDb()
+  const conditions = []
+  if (filters.query) conditions.push(like(reviews.content, `%${filters.query}%`))
+  if (filters.from) conditions.push(gte(reviews.date, filters.from))
+  if (filters.to) conditions.push(lte(reviews.date, filters.to))
+  if (filters.type) conditions.push(eq(reviews.type, filters.type))
+
+  return db
+    .select()
+    .from(reviews)
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
+    .orderBy(desc(reviews.id))
+    .limit(filters.limit)
     .all()
 }
 

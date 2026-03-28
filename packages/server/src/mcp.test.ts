@@ -152,6 +152,209 @@ describe('create_goal tool', () => {
   })
 })
 
+describe('find_reviews tool', () => {
+  async function seedReviews() {
+    await app.request('/api/goals', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'quarterly',
+        content: 'Goal',
+        start_date: '2026-01-01',
+        end_date: '2026-12-31',
+      }),
+    })
+    await app.request('/api/reviews', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'interim',
+        content: 'プロジェクトが順調',
+        date: '2026-03-01',
+        goal_ids: [1],
+      }),
+    })
+    await app.request('/api/reviews', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'final',
+        content: '目標を達成できた',
+        date: '2026-03-31',
+        goal_ids: [1],
+      }),
+    })
+    await app.request('/api/reviews', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'interim',
+        content: '来月に向けて準備',
+        date: '2026-04-15',
+      }),
+    })
+  }
+
+  it('returns all reviews up to limit when no filters', async () => {
+    await mcpInitialize()
+    await seedReviews()
+
+    const res = await mcpRequest({
+      jsonrpc: '2.0',
+      id: 40,
+      method: 'tools/call',
+      params: {
+        name: 'find_reviews',
+        arguments: { limit: 10 },
+      },
+    })
+
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    const reviews = JSON.parse(body.result.content[0].text)
+    expect(reviews).toHaveLength(3)
+  })
+
+  it('filters by query', async () => {
+    await mcpInitialize()
+    await seedReviews()
+
+    const res = await mcpRequest({
+      jsonrpc: '2.0',
+      id: 41,
+      method: 'tools/call',
+      params: {
+        name: 'find_reviews',
+        arguments: { limit: 10, query: '順調' },
+      },
+    })
+
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    const reviews = JSON.parse(body.result.content[0].text)
+    expect(reviews).toHaveLength(1)
+    expect(reviews[0].content).toBe('プロジェクトが順調')
+  })
+
+  it('filters by date range', async () => {
+    await mcpInitialize()
+    await seedReviews()
+
+    const res = await mcpRequest({
+      jsonrpc: '2.0',
+      id: 42,
+      method: 'tools/call',
+      params: {
+        name: 'find_reviews',
+        arguments: { limit: 10, from: '2026-03-01', to: '2026-03-31' },
+      },
+    })
+
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    const reviews = JSON.parse(body.result.content[0].text)
+    expect(reviews).toHaveLength(2)
+  })
+
+  it('filters by type', async () => {
+    await mcpInitialize()
+    await seedReviews()
+
+    const res = await mcpRequest({
+      jsonrpc: '2.0',
+      id: 43,
+      method: 'tools/call',
+      params: {
+        name: 'find_reviews',
+        arguments: { limit: 10, type: 'final' },
+      },
+    })
+
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    const reviews = JSON.parse(body.result.content[0].text)
+    expect(reviews).toHaveLength(1)
+    expect(reviews[0].type).toBe('final')
+  })
+
+  it('combines multiple filters', async () => {
+    await mcpInitialize()
+    await seedReviews()
+
+    const res = await mcpRequest({
+      jsonrpc: '2.0',
+      id: 44,
+      method: 'tools/call',
+      params: {
+        name: 'find_reviews',
+        arguments: { limit: 10, type: 'interim', from: '2026-04-01' },
+      },
+    })
+
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    const reviews = JSON.parse(body.result.content[0].text)
+    expect(reviews).toHaveLength(1)
+    expect(reviews[0].content).toBe('来月に向けて準備')
+  })
+
+  it('returns error for invalid date format', async () => {
+    await mcpInitialize()
+
+    const res = await mcpRequest({
+      jsonrpc: '2.0',
+      id: 45,
+      method: 'tools/call',
+      params: {
+        name: 'find_reviews',
+        arguments: { limit: 10, from: 'invalid' },
+      },
+    })
+
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.result.isError).toBe(true)
+  })
+
+  it('returns error when from > to', async () => {
+    await mcpInitialize()
+
+    const res = await mcpRequest({
+      jsonrpc: '2.0',
+      id: 46,
+      method: 'tools/call',
+      params: {
+        name: 'find_reviews',
+        arguments: { limit: 10, from: '2026-04-01', to: '2026-03-01' },
+      },
+    })
+
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.result.isError).toBe(true)
+  })
+
+  it('includes goal_ids in results', async () => {
+    await mcpInitialize()
+    await seedReviews()
+
+    const res = await mcpRequest({
+      jsonrpc: '2.0',
+      id: 47,
+      method: 'tools/call',
+      params: {
+        name: 'find_reviews',
+        arguments: { limit: 1, type: 'final' },
+      },
+    })
+
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    const reviews = JSON.parse(body.result.content[0].text)
+    expect(reviews[0].goal_ids).toEqual([1])
+  })
+})
+
 describe('list_reviews tool', () => {
   it('returns empty array when no reviews exist', async () => {
     await mcpInitialize()

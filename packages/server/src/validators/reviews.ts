@@ -30,6 +30,52 @@ export function validateListReviewsInput(
   }
 }
 
+export interface FindReviewsInput {
+  limit: number
+  query?: string
+  from?: string
+  to?: string
+  type?: ReviewType
+}
+
+const datePattern = /^\d{4}-\d{2}-\d{2}$/
+
+export function validateFindReviewsInput(
+  body: Record<string, unknown>,
+): { data: FindReviewsInput } | { error: string } {
+  const { limit, query, from, to, type } = body
+
+  if (typeof limit !== 'number' || limit < 1) {
+    return { error: 'limit must be a positive number' }
+  }
+
+  if (from !== undefined && (typeof from !== 'string' || !datePattern.test(from))) {
+    return { error: 'from must be a date string (YYYY-MM-DD)' }
+  }
+
+  if (to !== undefined && (typeof to !== 'string' || !datePattern.test(to))) {
+    return { error: 'to must be a date string (YYYY-MM-DD)' }
+  }
+
+  if (from && to && from > to) {
+    return { error: 'from must be before or equal to to' }
+  }
+
+  if (type !== undefined && type !== 'interim' && type !== 'final') {
+    return { error: "type must be 'interim' or 'final'" }
+  }
+
+  return {
+    data: {
+      limit,
+      query: query as string | undefined,
+      from: from as string | undefined,
+      to: to as string | undefined,
+      type: type as ReviewType | undefined,
+    },
+  }
+}
+
 export function validateReviewInput(
   body: Record<string, unknown>,
 ): { data: ReviewInput } | { error: string } {

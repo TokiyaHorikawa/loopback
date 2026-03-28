@@ -35,6 +35,14 @@ export function getReviewStats() {
   return repo.getReviewStats()
 }
 
+export function searchReviews(filters: repo.FindReviewsFilters) {
+  const rows = repo.findReviewsByFilters(filters)
+  return rows.map((row) => ({
+    ...row,
+    goal_ids: repo.findGoalIdsByReviewId(row.id),
+  }))
+}
+
 export function createReview(input: ReviewInput) {
   const result = repo.insertReview(input)
 

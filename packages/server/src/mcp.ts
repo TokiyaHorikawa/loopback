@@ -4,9 +4,18 @@ import { z } from 'zod'
 
 import { getContext } from './services/context.js'
 import { createGoal } from './services/goals.js'
-import { createReview, getRecentReviews, getReviewsByGoalId } from './services/reviews.js'
+import {
+  createReview,
+  getRecentReviews,
+  getReviewsByGoalId,
+  searchReviews,
+} from './services/reviews.js'
 import { validateGoalInput } from './validators/goals.js'
-import { validateListReviewsInput, validateReviewInput } from './validators/reviews.js'
+import {
+  validateFindReviewsInput,
+  validateListReviewsInput,
+  validateReviewInput,
+} from './validators/reviews.js'
 
 export const mcpServer = new McpServer({
   name: 'loopback',
@@ -98,6 +107,33 @@ mcpServer.registerTool(
     const reviews = validated.data.goal_id
       ? getReviewsByGoalId(validated.data.goal_id, validated.data.limit)
       : getRecentReviews(validated.data.limit)
+    return {
+      content: [{ type: 'text', text: JSON.stringify(reviews) }],
+    }
+  },
+)
+
+mcpServer.registerTool(
+  'find_reviews',
+  {
+    description: 'limit, query?, from?, to?, type? で横断的にふりかえりを検索する',
+    inputSchema: {
+      limit: z.number(),
+      query: z.string().optional(),
+      from: z.string().optional(),
+      to: z.string().optional(),
+      type: z.enum(['interim', 'final']).optional(),
+    },
+  },
+  ({ limit, query, from, to, type }) => {
+    const validated = validateFindReviewsInput({ limit, query, from, to, type })
+    if ('error' in validated) {
+      return {
+        content: [{ type: 'text', text: JSON.stringify({ error: validated.error }) }],
+        isError: true,
+      }
+    }
+    const reviews = searchReviews(validated.data)
     return {
       content: [{ type: 'text', text: JSON.stringify(reviews) }],
     }
