@@ -4,6 +4,7 @@ import { parseArgs } from 'node:util'
 
 import { DB_PATH, migrate } from '@loopback/db'
 import { runStdio, startServer } from '@loopback/server'
+import open from 'open'
 
 const VERSION = '0.0.1'
 
@@ -34,6 +35,7 @@ const START_HELP = `Usage: loopback start [options]
 
 Options:
   --port <number>  ポート番号 (デフォルト: 3000)
+  --no-open        ブラウザを自動で開かない
   --help           ヘルプを表示`
 
 function main() {
@@ -73,11 +75,14 @@ function start() {
     args: process.argv.slice(3),
     options: {
       port: { type: 'string', short: 'p' },
+      open: { type: 'boolean', default: true },
     },
     strict: false,
+    allowNegative: true,
   })
 
   const port = values.port ? Number(values.port) : 3000
+  const shouldOpen = values.open !== false
 
   if (values.port && (Number.isNaN(port) || port < 1 || port > 65535)) {
     console.error(`Invalid port: ${values.port}`)
@@ -92,9 +97,14 @@ function start() {
   console.log(`  Database:  ${DB_PATH}`)
 
   // サーバー起動
+  const url = `http://localhost:${port}`
   startServer({ port, silent: true })
-  console.log(`  Server:    http://localhost:${port}`)
-  console.log(`  MCP:       http://localhost:${port}/mcp\n`)
+  console.log(`  Server:    ${url}`)
+  console.log(`  MCP:       ${url}/mcp\n`)
+
+  if (shouldOpen) {
+    open(url)
+  }
 }
 
 function mcp() {
