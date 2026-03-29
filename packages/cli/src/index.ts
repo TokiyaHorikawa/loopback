@@ -2,7 +2,7 @@
 
 import { parseArgs } from 'node:util'
 
-import { DB_PATH, migrate } from '@loopback/db'
+import { DB_PATH, migrate, writePidFile, readPidFile, removePidFile } from '@loopback/db'
 import { runStdio, startServer } from '@loopback/server'
 import open from 'open'
 
@@ -15,6 +15,7 @@ Usage: loopback <command> [options]
 
 Commands:
   start   サーバーを起動する
+  stop    サーバーを停止する
   mcp     stdioモードでMCPサーバーを起動する
 
 Options:
@@ -28,6 +29,10 @@ Claude Code / Claude Desktop が自動でプロセスを管理するため、手
 
 登録例:
   claude mcp add loopback -- npx loopback mcp`
+
+const STOP_HELP = `Usage: loopback stop
+
+実行中のサーバーを停止する。`
 
 const START_HELP = `Usage: loopback start [options]
 
@@ -51,6 +56,8 @@ function main() {
   if (!command || args.includes('--help') || args.includes('-h')) {
     if (command === 'start') {
       console.log(START_HELP)
+    } else if (command === 'stop') {
+      console.log(STOP_HELP)
     } else if (command === 'mcp') {
       console.log(MCP_HELP)
     } else {
@@ -61,6 +68,8 @@ function main() {
 
   if (command === 'start') {
     start()
+  } else if (command === 'stop') {
+    stop()
   } else if (command === 'mcp') {
     mcp()
   } else {
@@ -90,6 +99,19 @@ function start() {
     return
   }
 
+  // 二重起動チェック
+  const existing = readPidFile()
+  if (existing) {
+    try {
+      process.kill(existing.pid, 0)
+      console.error(`Server is already running (pid ${existing.pid}, port ${existing.port})`)
+      process.exitCode = 1
+      return
+    } catch {
+      removePidFile()
+    }
+  }
+
   console.log(`\nLoopback v${VERSION}\n`)
 
   // DB マイグレーション
@@ -98,12 +120,58 @@ function start() {
 
   // サーバー起動
   const url = `http://localhost:${port}`
-  startServer({ port, silent: true })
+  const server = startServer({ port, silent: true })
   console.log(`  Server:    ${url}`)
   console.log(`  MCP:       ${url}/mcp\n`)
 
   if (shouldOpen) {
     open(url)
+  }
+
+  // PID ファイル書き込み
+  writePidFile(process.pid, port)
+
+  // グレースフルシャットダウン
+  const shutdown = () => {
+    server.close(() => {
+      removePidFile()
+      process.exit(0)
+    })
+  }
+
+  process.on('SIGTERM', shutdown)
+  process.on('SIGINT', shutdown)
+  process.on('exit', () => {
+    removePidFile()
+  })
+}
+
+function stop() {
+  const pidInfo = readPidFile()
+
+  if (!pidInfo) {
+    console.error('No running server found')
+    process.exitCode = 1
+    return
+  }
+
+  const { pid, port } = pidInfo
+
+  try {
+    process.kill(pid, 0)
+  } catch {
+    removePidFile()
+    console.error(`Server is not running (stale PID file removed)`)
+    process.exitCode = 1
+    return
+  }
+
+  try {
+    process.kill(pid, 'SIGTERM')
+    console.log(`Stopped loopback server (pid ${pid}, port ${port})`)
+  } catch (err) {
+    console.error(`Failed to stop server (pid ${pid}): ${err}`)
+    process.exitCode = 1
   }
 }
 
