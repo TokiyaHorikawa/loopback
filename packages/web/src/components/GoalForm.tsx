@@ -13,14 +13,18 @@ type GoalInput = {
 type Props = {
   onCreated: () => void
   onCancel: () => void
+  initialGoal?: Goal
 }
 
-export function GoalForm({ onCreated, onCancel }: Props) {
-  const [type, setType] = useState<'annual' | 'quarterly'>('quarterly')
-  const [content, setContent] = useState('')
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
-  const { submit, submitting, error } = useSubmit<GoalInput, Goal>('/api/goals')
+export function GoalForm({ onCreated, onCancel, initialGoal }: Props) {
+  const [type, setType] = useState<'annual' | 'quarterly'>(initialGoal?.type ?? 'quarterly')
+  const [content, setContent] = useState(initialGoal?.content ?? '')
+  const [startDate, setStartDate] = useState(initialGoal?.start_date ?? '')
+  const [endDate, setEndDate] = useState(initialGoal?.end_date ?? '')
+
+  const url = initialGoal ? `/api/goals/${initialGoal.id}` : '/api/goals'
+  const method = initialGoal ? 'PUT' : 'POST'
+  const { submit, submitting, error } = useSubmit<GoalInput, Goal>(url, method)
 
   const canSubmit = content.trim() && startDate && endDate && !submitting
 
@@ -79,7 +83,7 @@ export function GoalForm({ onCreated, onCancel }: Props) {
       {error && <div className="form-error">{error}</div>}
       <div className="form-actions">
         <button className="btn btn-primary" type="submit" disabled={!canSubmit}>
-          {submitting ? '保存中...' : '保存'}
+          {submitting ? '保存中...' : initialGoal ? '更新' : '保存'}
         </button>
         <button className="btn btn-secondary" type="button" onClick={onCancel}>
           キャンセル
