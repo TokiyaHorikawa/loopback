@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { Header } from './components/Header'
+import { NextAction } from './components/NextAction'
 import { GoalsPage } from './pages/GoalsPage'
 import { ReviewsPage } from './pages/ReviewsPage'
 
@@ -22,7 +23,10 @@ export function App() {
   return (
     <>
       <Header currentPage={page} />
-      <main className="main">{page === 'goals' ? <GoalsPage /> : <ReviewsPage />}</main>
+      <main className="main">
+        <NextAction />
+        {page === 'goals' ? <GoalsPage /> : <ReviewsPage />}
+      </main>
     </>
   )
 }

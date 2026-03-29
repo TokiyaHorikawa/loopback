@@ -15,3 +15,9 @@ export type Review = {
   created_at: string
   goal_ids: number[]
 }
+
+export type ContextResponse = {
+  goals: Goal[]
+  review_stats: { total: number; last_reviewed_at: string | null }
+  recent_reviews: Review[]
+}
