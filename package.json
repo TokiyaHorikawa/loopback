@@ -16,8 +16,8 @@
   },
   "devDependencies": {
     "lefthook": "^2.1.4",
-    "typescript": "^5.7.0",
-    "vite-plus": "^0.1.0"
+    "typescript": "^6.0.2",
+    "vite-plus": "^0.1.14"
   },
   "engines": {
     "node": ">=24"
