@@ -1,15 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 type UseFetchResult<T> = {
   data: T | null
   loading: boolean
   error: string | null
+  refetch: () => void
 }
 
 export function useFetch<T>(url: string): UseFetchResult<T> {
   const [data, setData] = useState<T | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [version, setVersion] = useState(0)
+
+  const refetch = useCallback(() => setVersion((v) => v + 1), [])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -31,7 +35,7 @@ export function useFetch<T>(url: string): UseFetchResult<T> {
       .finally(() => setLoading(false))
 
     return () => controller.abort()
-  }, [url])
+  }, [url, version])
 
-  return { data, loading, error }
+  return { data, loading, error, refetch }
 }
