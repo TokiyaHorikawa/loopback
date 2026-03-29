@@ -6,7 +6,10 @@ type UseSubmitResult<TBody, TResponse> = {
   error: string | null
 }
 
-export function useSubmit<TBody, TResponse>(url: string): UseSubmitResult<TBody, TResponse> {
+export function useSubmit<TBody, TResponse>(
+  url: string,
+  method: 'POST' | 'PUT' = 'POST',
+): UseSubmitResult<TBody, TResponse> {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -17,7 +20,7 @@ export function useSubmit<TBody, TResponse>(url: string): UseSubmitResult<TBody,
 
       try {
         const res = await fetch(url, {
-          method: 'POST',
+          method,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
         })
@@ -36,7 +39,7 @@ export function useSubmit<TBody, TResponse>(url: string): UseSubmitResult<TBody,
         setSubmitting(false)
       }
     },
-    [url],
+    [url, method],
   )
 
   return { submit, submitting, error }

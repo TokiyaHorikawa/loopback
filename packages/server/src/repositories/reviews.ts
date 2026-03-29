@@ -85,6 +85,26 @@ export function findReviewsByFilters(filters: FindReviewsFilters) {
     .all()
 }
 
+export function updateReview(id: number, input: Omit<ReviewInput, 'goal_ids'>) {
+  const db = getDb()
+  return db
+    .update(reviews)
+    .set({ type: input.type, content: input.content, date: input.date })
+    .where(eq(reviews.id, id))
+    .returning()
+    .get()
+}
+
+export function deleteReviewGoalsByReviewId(reviewId: number) {
+  const db = getDb()
+  db.delete(review_goals).where(eq(review_goals.review_id, reviewId)).run()
+}
+
+export function deleteReview(id: number) {
+  const db = getDb()
+  return db.delete(reviews).where(eq(reviews.id, id)).returning().get()
+}
+
 export function getReviewStats() {
   const db = getDb()
   return db

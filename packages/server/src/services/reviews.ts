@@ -43,6 +43,23 @@ export function searchReviews(filters: repo.FindReviewsFilters) {
   }))
 }
 
+export function updateReview(id: number, input: ReviewInput) {
+  const existing = repo.findReviewById(id)
+  if (!existing) return null
+  const result = repo.updateReview(id, input)
+  repo.deleteReviewGoalsByReviewId(id)
+  for (const goalId of input.goal_ids) {
+    repo.insertReviewGoal(id, goalId)
+  }
+  return { ...result, goal_ids: input.goal_ids }
+}
+
+export function deleteReview(id: number) {
+  const existing = repo.findReviewById(id)
+  if (!existing) return null
+  return repo.deleteReview(id)
+}
+
 export function createReview(input: ReviewInput) {
   const result = repo.insertReview(input)
 

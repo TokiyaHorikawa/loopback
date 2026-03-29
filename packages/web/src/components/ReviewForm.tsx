@@ -14,18 +14,22 @@ type ReviewInput = {
 type Props = {
   onCreated: () => void
   onCancel: () => void
+  initialReview?: Review
 }
 
 function today() {
   return new Date().toISOString().slice(0, 10)
 }
 
-export function ReviewForm({ onCreated, onCancel }: Props) {
-  const [type, setType] = useState<'interim' | 'final'>('interim')
-  const [content, setContent] = useState('')
-  const [date, setDate] = useState(today)
-  const [selectedGoalIds, setSelectedGoalIds] = useState<number[]>([])
-  const { submit, submitting, error } = useSubmit<ReviewInput, Review>('/api/reviews')
+export function ReviewForm({ onCreated, onCancel, initialReview }: Props) {
+  const [type, setType] = useState<'interim' | 'final'>(initialReview?.type ?? 'interim')
+  const [content, setContent] = useState(initialReview?.content ?? '')
+  const [date, setDate] = useState(initialReview?.date ?? today())
+  const [selectedGoalIds, setSelectedGoalIds] = useState<number[]>(initialReview?.goal_ids ?? [])
+
+  const url = initialReview ? `/api/reviews/${initialReview.id}` : '/api/reviews'
+  const method = initialReview ? 'PUT' : 'POST'
+  const { submit, submitting, error } = useSubmit<ReviewInput, Review>(url, method)
   const { data: goals } = useFetch<Goal[]>('/api/goals')
 
   const isFinal = type === 'final'
@@ -102,7 +106,7 @@ export function ReviewForm({ onCreated, onCancel }: Props) {
       {error && <div className="form-error">{error}</div>}
       <div className="form-actions">
         <button className="btn btn-primary" type="submit" disabled={!canSubmit}>
-          {submitting ? '保存中...' : '保存'}
+          {submitting ? '保存中...' : initialReview ? '更新' : '保存'}
         </button>
         <button className="btn btn-secondary" type="button" onClick={onCancel}>
           キャンセル

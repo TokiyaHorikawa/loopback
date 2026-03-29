@@ -1,5 +1,5 @@
 import { getDb, goals } from '@loopback/db'
-import { and, desc, lte, gte } from 'drizzle-orm'
+import { and, desc, eq, lte, gte } from 'drizzle-orm'
 
 import type { GoalInput } from '../validators/goals.js'
 
@@ -17,6 +17,11 @@ export function findActiveGoals(today: string) {
     .all()
 }
 
+export function findGoalById(id: number) {
+  const db = getDb()
+  return db.select().from(goals).where(eq(goals.id, id)).get()
+}
+
 export function insertGoal(input: GoalInput) {
   const db = getDb()
   return db
@@ -29,4 +34,24 @@ export function insertGoal(input: GoalInput) {
     })
     .returning()
     .get()
+}
+
+export function updateGoal(id: number, input: GoalInput) {
+  const db = getDb()
+  return db
+    .update(goals)
+    .set({
+      type: input.type as 'annual' | 'quarterly',
+      content: input.content,
+      start_date: input.start_date,
+      end_date: input.end_date,
+    })
+    .where(eq(goals.id, id))
+    .returning()
+    .get()
+}
+
+export function deleteGoal(id: number) {
+  const db = getDb()
+  return db.delete(goals).where(eq(goals.id, id)).returning().get()
 }
