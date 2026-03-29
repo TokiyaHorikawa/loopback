@@ -9,12 +9,12 @@ type ReviewCardProps = {
 
 export function ReviewCard({ review }: ReviewCardProps) {
   return (
-    <div className="card">
+    <a href={`#reviews/${review.id}`} className="card card-link">
       <div className="card-header">
         <Badge variant={review.type} label={typeLabel[review.type]} />
         <span className="card-date">{review.date}</span>
       </div>
       <div className="card-content">{review.content}</div>
-    </div>
+    </a>
   )
 }

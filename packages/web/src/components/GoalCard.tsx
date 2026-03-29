@@ -9,7 +9,7 @@ type GoalCardProps = {
 
 export function GoalCard({ goal }: GoalCardProps) {
   return (
-    <div className="card">
+    <a href={`#goals/${goal.id}`} className="card card-link">
       <div className="card-header">
         <Badge variant={goal.type} label={typeLabel[goal.type]} />
         <span className="card-date">
@@ -17,6 +17,6 @@ export function GoalCard({ goal }: GoalCardProps) {
         </span>
       </div>
       <div className="card-content">{goal.content}</div>
-    </div>
+    </a>
   )
 }
