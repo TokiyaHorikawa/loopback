@@ -13,7 +13,7 @@ function deriveAction(ctx: ContextResponse): { message: string; href: string } |
   const today = new Date().toISOString().slice(0, 10)
 
   if (ctx.goals.length === 0) {
-    return { message: 'まず目標を設定しましょう', href: '#goals' }
+    return { message: 'まず目標を設定しましょう', href: '#chat?prompt=set_goal' }
   }
 
   const hasApproachingDeadline = ctx.goals.some(
@@ -22,12 +22,12 @@ function deriveAction(ctx: ContextResponse): { message: string; href: string } |
       daysBetween(today, g.end_date) >= 0,
   )
   if (hasApproachingDeadline) {
-    return { message: '最終ふりかえりの時期です', href: '#reviews' }
+    return { message: '最終ふりかえりの時期です', href: '#chat?prompt=review_final' }
   }
 
   const { last_reviewed_at } = ctx.review_stats
   if (!last_reviewed_at || daysBetween(last_reviewed_at, today) >= REVIEW_INTERVAL_DAYS) {
-    return { message: '中間ふりかえりをしましょう', href: '#reviews' }
+    return { message: '中間ふりかえりをしましょう', href: '#chat?prompt=review' }
   }
 
   return null

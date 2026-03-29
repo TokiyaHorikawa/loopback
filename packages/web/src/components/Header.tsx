@@ -1,5 +1,5 @@
 type HeaderProps = {
-  currentPage: 'goals' | 'reviews'
+  currentPage: 'goals' | 'reviews' | 'chat'
 }
 
 export function Header({ currentPage }: HeaderProps) {
@@ -15,6 +15,9 @@ export function Header({ currentPage }: HeaderProps) {
           className={`nav-tab ${currentPage === 'reviews' ? 'nav-tab-active' : ''}`}
         >
           ふりかえり
+        </a>
+        <a href="#chat" className={`nav-tab ${currentPage === 'chat' ? 'nav-tab-active' : ''}`}>
+          Chat
         </a>
       </nav>
     </header>
