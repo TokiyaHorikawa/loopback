@@ -1,7 +1,21 @@
-import { spawn } from 'node:child_process'
+import { ChildProcess, spawn } from 'node:child_process'
 import { EventEmitter } from 'node:events'
+import { mkdirSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 import { getPromptText } from '../mcp.js'
+
+const mcpConfigPath = join(tmpdir(), 'loopback-mcp-config.json')
+mkdirSync(tmpdir(), { recursive: true })
+writeFileSync(
+  mcpConfigPath,
+  JSON.stringify({
+    mcpServers: {
+      loopback: { type: 'http', url: 'http://localhost:3000/mcp' },
+    },
+  }),
+)
 
 export type ChatEvent =
   | { type: 'text'; content: string }
@@ -14,9 +28,28 @@ type ChatSession = {
   claudeSessionId: string | null
   systemPrompt: string | null
   emitter: EventEmitter
+  proc: ChildProcess | null
 }
 
 const sessions = new Map<string, ChatSession>()
+
+const activeProcs = new Set<ChildProcess>()
+
+function killAllProcs() {
+  for (const proc of activeProcs) {
+    proc.kill()
+  }
+  activeProcs.clear()
+}
+
+process.on('SIGINT', () => {
+  killAllProcs()
+  process.exit(0)
+})
+process.on('SIGTERM', () => {
+  killAllProcs()
+  process.exit(0)
+})
 
 export function createSession(options?: { prompt?: string }): { id: string } {
   const id = crypto.randomUUID()
@@ -25,6 +58,7 @@ export function createSession(options?: { prompt?: string }): { id: string } {
     claudeSessionId: null,
     systemPrompt,
     emitter: new EventEmitter(),
+    proc: null,
   }
   session.emitter.setMaxListeners(5)
   sessions.set(id, session)
@@ -49,16 +83,13 @@ export function sendMessage(sessionId: string, content: string): void {
   const session = sessions.get(sessionId)
   if (!session) throw new Error('Session not found')
 
-  const mcpConfig = JSON.stringify({
-    loopback: { url: 'http://localhost:3000/mcp' },
-  })
-
   const args: string[] = [
     '--print',
+    '--verbose',
     '--output-format',
     'stream-json',
     '--mcp-config',
-    mcpConfig,
+    mcpConfigPath,
     '--permission-mode',
     'bypassPermissions',
   ]
@@ -74,11 +105,17 @@ export function sendMessage(sessionId: string, content: string): void {
   args.push(content)
 
   const toolNames = new Map<string, string>()
+  console.log('[chat] spawning claude with args:', args)
   const proc = spawn('claude', args)
+  session.proc = proc
+  activeProcs.add(proc)
   let buffer = ''
+  let stderrBuf = ''
 
   proc.stdout.on('data', (chunk: Buffer) => {
-    buffer += chunk.toString()
+    const text = chunk.toString()
+    console.log('[chat] stdout:', text)
+    buffer += text
     const lines = buffer.split('\n')
     buffer = lines.pop() ?? ''
     for (const line of lines) {
@@ -90,20 +127,13 @@ export function sendMessage(sessionId: string, content: string): void {
   })
 
   proc.stderr.on('data', (chunk: Buffer) => {
-    const text = chunk.toString().toLowerCase()
-    if (
-      text.includes('not logged in') ||
-      text.includes('authentication') ||
-      text.includes('unauthorized')
-    ) {
-      emit(session, {
-        type: 'error',
-        message: 'ターミナルで claude を実行してログインしてください',
-      })
-    }
+    const text = chunk.toString()
+    console.error('[chat] stderr:', text)
+    stderrBuf += text
   })
 
   proc.on('error', (err) => {
+    console.error('[chat] spawn error:', err)
     const message =
       (err as NodeJS.ErrnoException).code === 'ENOENT'
         ? 'Claude Code をインストールしてください'
@@ -111,11 +141,21 @@ export function sendMessage(sessionId: string, content: string): void {
     emit(session, { type: 'error', message })
   })
 
-  proc.on('close', () => {
+  proc.on('close', (code) => {
+    activeProcs.delete(proc)
+    session.proc = null
+    console.log('[chat] process exited with code:', code)
     if (buffer.trim()) {
       try {
         processLine(session, JSON.parse(buffer) as Record<string, unknown>, toolNames)
       } catch {}
+    }
+    if (code !== 0 && code !== null) {
+      const errMsg = stderrBuf.trim()
+      emit(session, {
+        type: 'error',
+        message: errMsg || `claude exited with code ${code}`,
+      })
     }
   })
 }
@@ -164,6 +204,10 @@ function processLine(
 export function deleteSession(id: string): void {
   const session = sessions.get(id)
   if (session) {
+    if (session.proc) {
+      session.proc.kill()
+      activeProcs.delete(session.proc)
+    }
     session.emitter.removeAllListeners()
     sessions.delete(id)
   }
