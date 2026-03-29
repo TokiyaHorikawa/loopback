@@ -225,3 +225,103 @@ describe('GET /api/reviews/:id', () => {
     expect(res.status).toBe(404)
   })
 })
+
+describe('PUT /api/reviews/:id', () => {
+  it('updates a review', async () => {
+    await postReview({
+      type: 'interim',
+      content: '元の内容',
+      date: '2026-02-15',
+    })
+    const res = await app.request('/api/reviews/1', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'interim',
+        content: '更新後の内容',
+        date: '2026-02-20',
+        goal_ids: [],
+      }),
+    })
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.id).toBe(1)
+    expect(body.content).toBe('更新後の内容')
+    expect(body.date).toBe('2026-02-20')
+    expect(body.goal_ids).toEqual([])
+  })
+
+  it('updates goal_ids on review', async () => {
+    await postGoal()
+    await postGoal()
+    await postReview({
+      type: 'interim',
+      content: 'レビュー',
+      date: '2026-02-15',
+      goal_ids: [1],
+    })
+
+    const res = await app.request('/api/reviews/1', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'interim',
+        content: 'レビュー更新',
+        date: '2026-02-15',
+        goal_ids: [2],
+      }),
+    })
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.goal_ids).toEqual([2])
+  })
+
+  it('returns 404 for non-existent review', async () => {
+    const res = await app.request('/api/reviews/999', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'interim',
+        content: 'test',
+        date: '2026-02-15',
+      }),
+    })
+    expect(res.status).toBe(404)
+  })
+
+  it('returns 400 for invalid input', async () => {
+    await postReview({
+      type: 'interim',
+      content: 'test',
+      date: '2026-02-15',
+    })
+    const res = await app.request('/api/reviews/1', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'monthly' }),
+    })
+    expect(res.status).toBe(400)
+  })
+})
+
+describe('DELETE /api/reviews/:id', () => {
+  it('deletes a review', async () => {
+    await postReview({
+      type: 'interim',
+      content: '削除対象',
+      date: '2026-02-15',
+    })
+    const res = await app.request('/api/reviews/1', { method: 'DELETE' })
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.ok).toBe(true)
+
+    const listRes = await app.request('/api/reviews')
+    expect(await listRes.json()).toEqual([])
+  })
+
+  it('returns 404 for non-existent review', async () => {
+    const res = await app.request('/api/reviews/999', { method: 'DELETE' })
+    expect(res.status).toBe(404)
+  })
+})
