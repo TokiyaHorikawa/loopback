@@ -13,16 +13,16 @@
     "@hono/mcp": "^0.2.4",
     "@hono/node-server": "^1.14.0",
     "@loopback/db": "workspace:*",
-    "@modelcontextprotocol/sdk": "^1.27.1",
-    "drizzle-orm": "^0.38.4",
-    "hono": "^4.7.0",
+    "@modelcontextprotocol/sdk": "^1.28.0",
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.12.9",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
-    "@types/node": "^22.19.15",
-    "better-sqlite3": "^11.10.0",
+    "@types/node": "^25.5.0",
+    "better-sqlite3": "^12.8.0",
     "tsx": "^4.19.0",
-    "vitest": "^4.1.0"
+    "vitest": "^4.1.2"
   }
 }
